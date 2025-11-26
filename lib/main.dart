@@ -137,10 +137,12 @@ class MyApp extends StatelessWidget {
           ),
         ],
         child: Builder(
-          builder: (final BuildContext context) => MultiProvider(
-            providers: <SingleChildWidget>[
-              ChangeNotifierProvider<CurrentUserProvider>(
-                lazy: false,
+          builder: (final BuildContext context) {
+            setUpRouter(authBloc: BlocProvider.of<AuthenticationBloc>(context));
+            return MultiProvider(
+              providers: <SingleChildWidget>[
+                ChangeNotifierProvider<CurrentUserProvider>(
+                  lazy: false,
                 create: (final _) => CurrentUserProvider(
                   authenticationBloc:
                       BlocProvider.of<AuthenticationBloc>(context),
@@ -175,12 +177,6 @@ class RootApp extends StatefulWidget {
 }
 
 class _RootAppState extends State<RootApp> {
-  @override
-  void initState() {
-    setUpRouter(context);
-    super.initState();
-  }
-
   @override
   Widget build(final BuildContext context) => DynamicColorBuilder(
         builder:

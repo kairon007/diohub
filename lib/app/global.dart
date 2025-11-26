@@ -1,3 +1,4 @@
+import 'package:diohub/blocs/authentication_bloc/authentication_bloc.dart';
 import 'package:diohub/routes/router.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
@@ -6,8 +7,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 late AppRouter _customRouter;
 AppRouter get customRouter => _customRouter;
 
-void setUpRouter(final BuildContext context) {
-  _customRouter = AppRouter(context);
+void setUpRouter({required AuthenticationBloc authBloc}) {
+  _customRouter = AppRouter(authBloc: authBloc);
 }
 
 BuildContext get currentContext => customRouter.navigatorKey.currentContext!;

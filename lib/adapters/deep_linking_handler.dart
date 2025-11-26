@@ -41,7 +41,7 @@ Future<void> deepLinkNavigate(final Uri link) async {
   if (link.toString().startsWith(_themeLinkPattern)) {
     // AutoRouter.of(Global.currentContext).replaceAll([LandingScreenRoute()]);
     await showDialog(
-      context: currentContext,
+      context: customRouter.navigatorKey.currentContext!,
       builder: (final BuildContext context) => AppDialog(
         title: 'Load theme?',
         actions: <Widget>[
@@ -66,11 +66,12 @@ Future<void> deepLinkNavigate(final Uri link) async {
     );
   } else if (_getRoutes(link)?.isNotEmpty ?? false) {
     if (_getRoutes(link)?.first is LandingRoute) {
-      AutoRouter.of(currentContext)
-          .popUntil((final Route<dynamic> route) => false);
+      unawaited(
+        customRouter.popUntil((final Route<dynamic> route) => false),
+      );
     }
     // AutoRouter.of(Global.currentContext).replaceAll(getRoutes(link)!);
-    await AutoRouter.of(currentContext).pushAll(_getRoutes(link)!);
+    await customRouter.pushAll(_getRoutes(link)!);
   }
 }
 
@@ -118,37 +119,36 @@ List<PageRouteInfo>? _getRoutes(final Uri uri) {
   } else {
     path = link.path;
   }
-  final StringFunctions relPath = StringFunctions(path);
   final List<PageRouteInfo> temp = <PageRouteInfo>[];
-  if (relPath.regexCompleteMatch(_exceptionURLPatterns)) {
+  if (path.regexCompleteMatch(_exceptionURLPatterns)) {
     unawaited(openInAppBrowser(link));
-  } else if (relPath.regexCompleteMatch(_landingPageURLPattern)) {
-    temp.add(LandingRoute(deepLinkData: relPath.toPathData));
-  } else if (relPath.regexCompleteMatch(_issuePageURLPattern) ||
-      relPath.regexCompleteMatch(_pullPageURLPattern)) {
-    temp.add(issuePullScreenRoute(relPath.toPathData));
-  } else if (relPath.regexCompleteMatch(_commitPageURLPattern)) {
+  } else if (path.regexCompleteMatch(_landingPageURLPattern)) {
+    temp.add(LandingRoute(deepLinkData: path.toPathData));
+  } else if (path.regexCompleteMatch(_issuePageURLPattern) ||
+      path.regexCompleteMatch(_pullPageURLPattern)) {
+    temp.add(issuePullScreenRoute(path.toPathData));
+  } else if (path.regexCompleteMatch(_commitPageURLPattern)) {
     temp.add(
       CommitInfoRoute(
         commitURL:
-            '${_urlWithPrefix('repos/${relPath.toPathData.components.sublist(0, 2).join('/')}')}/commits/${PathData(relPath.string).component(3)!}',
+            '${_urlWithPrefix('repos/${path.toPathData.components.sublist(0, 2).join('/')}')}/commits/${PathData(path).component(3)!}',
       ),
     );
-  } else if (relPath.regexCompleteMatch(_repoPageURLPattern)) {
+  } else if (path.regexCompleteMatch(_repoPageURLPattern)) {
     temp.add(
       RepositoryRoute(
         repositoryURL: _urlWithPrefix(
-          'repos/${relPath.toPathData.components.sublist(0, 2).join('/')}',
+          'repos/${path.toPathData.components.sublist(0, 2).join('/')}',
         ),
-        deepLinkData: relPath.toPathData,
+        deepLinkData: path.toPathData,
       ),
     );
-  } else if (relPath.regexCompleteMatch(
+  } else if (path.regexCompleteMatch(
     RegExp(_chars),
   )) {
     temp.add(
       OtherUserProfileRoute(
-        login: relPath.string,
+        login: path,
       ),
     );
   } else {
@@ -334,8 +334,8 @@ class PathData {
   String toString() => path;
 }
 
-extension on StringFunctions {
-  PathData get toPathData => PathData(string);
+extension on String {
+  PathData get toPathData => PathData(this);
 }
 
 /*
