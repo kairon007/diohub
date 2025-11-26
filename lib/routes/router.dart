@@ -5,7 +5,6 @@ import 'package:diohub/adapters/deep_linking_handler.dart';
 import 'package:diohub/blocs/authentication_bloc/authentication_bloc.dart';
 import 'package:diohub/routes/router.gr.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
 // flutter packages pub run build_runner watch --delete-conflicting-outputs
 
@@ -13,7 +12,8 @@ StackRouter autoRoute(final BuildContext context) => AutoRouter.of(context);
 
 @AutoRouterConfig()
 class AppRouter extends RootStackRouter {
-  AppRouter(final BuildContext context) : authGuard = AuthGuard(context);
+  AppRouter({required final AuthenticationBloc authBloc})
+      : authGuard = AuthGuard(authBloc);
   final AuthGuard authGuard;
 
   @override
@@ -106,16 +106,16 @@ class AppRouter extends RootStackRouter {
 // class $AppRouter {}
 
 class AuthGuard extends AutoRouteGuard {
-  AuthGuard(this.context);
+  AuthGuard(this.authBloc);
 
-  final BuildContext context;
+  final AuthenticationBloc authBloc;
 
   @override
   void onNavigation(
     final NavigationResolver resolver,
     final StackRouter router,
   ) {
-    if (!BlocProvider.of<AuthenticationBloc>(context).state.authenticated) {
+    if (!authBloc.state.authenticated) {
       unawaited(
         router.replaceAll(
           <PageRouteInfo>[
